@@ -3,13 +3,11 @@ from collections.abc import Iterable
 
 from fastapi import FastAPI, HTTPException, status
 
+from . import bdb_manager
 from .params import BDBParams
 from .types import BDB, UID
 
 app = FastAPI(title="REST Course", description="REST API Course")
-
-all_bdbs: dict[UID, BDB] = {}
-bdb_last_uid = 0
 
 
 @app.post(
@@ -20,25 +18,14 @@ bdb_last_uid = 0
     response_model=BDB,
 )
 def create_bdb(req: BDBParams):
-    global bdb_last_uid
-    bdb_last_uid += 1
-    uid = UID(bdb_last_uid)
-
-    bdb = BDB(
-        uid=uid,
-        name=req.name,
-        type=req.type,
-        memory_size=req.memory_size,
-    )
-
-    all_bdbs[uid] = bdb
+    bdb = bdb_manager.create_bdb(req)
     return bdb
 
 
 @app.get("/bdbs/{uid}", tags=["bdb"], operation_id="get_bdb", response_model=BDB)
 def get_bdb(uid: UID):
     try:
-        return all_bdbs[uid]
+        return bdb_manager.get_bdb(uid)
     except LookupError:
         raise HTTPException(status_code=404)
 
@@ -50,5 +37,4 @@ def get_bdb(uid: UID):
     response_model=Iterable[BDB],
 )
 def get_all_bdbs():
-    for uid in all_bdbs:
-        yield all_bdbs[uid]
+    return bdb_manager.get_all_bdbs()
