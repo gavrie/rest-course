@@ -28,8 +28,13 @@ def store_bdb(uid: UID, bdb: BDB):
 
 
 def get_bdb_uids() -> Iterable[UID]:
-    for u in red.smembers("bdb:all"):
-        yield UID(u)
+    cursor = 0
+    while True:
+        cursor, uids = red.sscan("bdb:all", cursor)
+        for u in uids:
+            yield UID(u)
+        if cursor == 0:
+            break
 
 
 def get_bdb(uid: UID) -> BDB:

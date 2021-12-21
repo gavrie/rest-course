@@ -20,7 +20,7 @@ Creating a BDB:
 
 Listing the BDBs:
 
-    $ httpx http://localhost:8000/bdbs                    ~/source/redislabs/rest-course
+    $ httpx http://localhost:8000/bdbs
 
 
 ## Design Concepts
