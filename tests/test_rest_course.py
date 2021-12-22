@@ -46,7 +46,10 @@ def test_create_bdb(client):
     assert uid not in bdb_uids_before, "UID was unexpectedly reused"
 
     # Get the BDB
-    bdb_url = f"{BDBS_URL}/{uid}"  # Ugly: manual composition of URL
+    location = r.headers["location"]
+    bdb_url = bdb["url"]
+    assert bdb_url == location
+
     r = client.get(bdb_url)
     assert r.json() == bdb, "BDB has changed since creation"
 

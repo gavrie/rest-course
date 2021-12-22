@@ -4,16 +4,18 @@ from collections.abc import Iterable
 from fastapi import FastAPI, HTTPException
 
 from . import bdb_manager
-from .params import BDBParams
+from .params import BDBParams, BDBResponse
 from .types import BDB, UID
 
 app = FastAPI()
 
 
 @app.post("/bdbs")
-def create_bdb(req: BDBParams) -> BDB:
+def create_bdb(req: BDBParams) -> BDBResponse:
     bdb = bdb_manager.create_bdb(req)
-    return bdb
+
+    # TODO: Add fields: created_at, url
+    return BDBResponse(bdb=bdb, url=url)
 
 
 @app.get("/bdbs/{uid}")
