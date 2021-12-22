@@ -31,12 +31,15 @@ def test_create_bdb(client):
 
     # Get current list of BDBs
     r = client.get(BDBS_URL)
-    bdb_uids_before = set(bdb["uid"] for bdb in r.json())
+    bdb_responses = r.json()
+    bdb_uids_before = set(bdb_response["bdb"]["uid"] for bdb_response in bdb_responses)
 
     # Create a BDB
     params = {"name": "foo", "memory_size": 2}
     r = client.post(BDBS_URL, json=params)
-    bdb = r.json()
+    bdb_response = r.json()
+    bdb = bdb_response["bdb"]
+    url = bdb_response["url"]
 
     assert bdb["uid"] is not None
     assert bdb["name"] == params["name"]
@@ -47,15 +50,17 @@ def test_create_bdb(client):
 
     # Get the BDB
     location = r.headers["location"]
-    bdb_url = bdb["url"]
-    assert bdb_url == location
+    assert url == location
 
-    r = client.get(bdb_url)
-    assert r.json() == bdb, "BDB has changed since creation"
+    r = client.get(url)
+    bdb_response = r.json()
+
+    assert bdb_response["bdb"] == bdb, "BDB has changed since creation"
 
     # Check that new BDB is in list
     r = client.get(BDBS_URL)
-    bdb_uids = set(bdb["uid"] for bdb in r.json())
+    bdb_responses = r.json()
+    bdb_uids = set(bdb_response["bdb"]["uid"] for bdb_response in bdb_responses)
 
     assert uid in bdb_uids
 
