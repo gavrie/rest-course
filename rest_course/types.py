@@ -1,9 +1,10 @@
 from enum import Enum
 
+from pydantic import PositiveInt
 from pydantic.dataclasses import dataclass
 
 
-class UID(int):
+class UID(PositiveInt):
     pass
 
 
@@ -16,5 +17,5 @@ class BDBType(str, Enum):
 class BDB:
     uid: UID
     name: str
-    memory_size: int
+    memory_size: PositiveInt
     type: BDBType
