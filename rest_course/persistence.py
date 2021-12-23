@@ -6,6 +6,8 @@ from pydantic.json import pydantic_encoder
 
 from .types import BDB, UID
 
+MAX_BDB_UID = 1_000_000
+
 
 def serialize(obj) -> str:
     return json.dumps(obj, default=pydantic_encoder)
@@ -23,18 +25,20 @@ def generate_bdb_uid() -> UID:
 
 
 def store_bdb(uid: UID, bdb: BDB):
-    red.sadd("bdb:all", uid)
+    red.zadd("bdb:all", {str(uid): uid})
     red.set(f"bdb:{uid}", serialize(bdb))
 
 
-def get_bdb_uids() -> Iterable[UID]:
-    cursor = 0
-    while True:
-        cursor, uids = red.sscan("bdb:all", cursor)
-        for u in uids:
-            yield UID(u)
-        if cursor == 0:
-            break
+def get_bdb_uids(offset: int, limit: int) -> Iterable[UID]:
+    for uid in red.zrange(
+        "bdb:all",
+        start=0,
+        end=MAX_BDB_UID,
+        byscore=True,
+        offset=offset,
+        num=limit,
+    ):
+        yield UID(uid)
 
 
 def get_bdb(uid: UID) -> BDB:

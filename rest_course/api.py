@@ -2,6 +2,7 @@
 from collections.abc import Iterable
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from pydantic import NonNegativeInt
 
 from . import bdb_manager
 from .params import BDBParams, BDBResponse
@@ -38,7 +39,18 @@ def get_bdb(uid: UID, request: Request):
     operation_id="get_all_bdbs",
     response_model=Iterable[BDBResponse],
 )
-def get_all_bdbs(request: Request):
-    for bdb in bdb_manager.get_all_bdbs():
+def get_all_bdbs(
+    request: Request,
+    response: Response,
+    offset: NonNegativeInt = 0,
+    limit: NonNegativeInt = 1000,
+):
+    response.headers["link"] = ""
+    # <http://localhost:8000/bdbs?offset=0&limit=10>; rel="first",
+    # <http://localhost:8000/bdbs?offset=40&limit=10>; rel="prev"
+    # <http://localhost:8000/bdbs?offset=50&limit=10>; rel="next",
+    # <http://localhost:8000/bdbs?offset=90&limit=10>; rel="last",
+
+    for bdb in bdb_manager.get_all_bdbs(offset=offset, limit=limit):
         url = request.url_for("get_bdb", uid=str(bdb.uid))
         yield BDBResponse(bdb=bdb, url=url)

@@ -21,6 +21,10 @@ def setup(client):
         client.post(BDBS_URL, json=params)
 
 
+def test_nop(client):
+    pass
+
+
 def test_create_bdb(client):
     """
     Assumptions:
