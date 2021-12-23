@@ -1,3 +1,4 @@
+from pydantic import PositiveInt
 from pydantic.dataclasses import dataclass
 
 from .types import BDBType, BDB
@@ -8,7 +9,7 @@ Url = str
 @dataclass
 class BDBParams:
     name: str
-    memory_size: int
+    memory_size: PositiveInt
     type: BDBType = BDBType.REDIS
 
 
