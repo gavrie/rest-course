@@ -49,7 +49,7 @@ Listing the BDBs:
   - 20 years old (Fielding 2000: Representational State Transfer)
   - _Resources_ (nouns)
   - _Identifiers_ (URI) for resources
-  - _Representations_ (JSON) of resources (media types)
+  - _Representations_ (JSON) of resources (media types); the Accept header (<- use yaml!)
   - Stateless
   - Hypermedia
   - HATEOAS
@@ -59,6 +59,6 @@ Listing the BDBs:
     - POST, PUT, PATCH
 - Status Codes
   - Client side (4xx) vs server side (5xx)
-- Filtering, sorting, pagination
+- Filtering, sorting, pagination (<- stateless by using ordered set in Redis)
 - Versioning
   - Explicit vs implicit
