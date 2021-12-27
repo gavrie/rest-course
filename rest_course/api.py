@@ -3,6 +3,7 @@ from collections.abc import Iterable
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import NonNegativeInt
+from starlette.datastructures import URL
 
 from . import bdb_manager
 from .params import BDBParams, BDBResponse
@@ -46,6 +47,8 @@ def get_all_bdbs(
     limit: NonNegativeInt = 1000,
 ):
     response.headers["link"] = ""
+    bdb_url = URL(request.url_for("get_bdb"))
+    bdb_url.include_query_params(offset=offset, limit=limit)
     # <http://localhost:8000/bdbs?offset=0&limit=10>; rel="first",
     # <http://localhost:8000/bdbs?offset=40&limit=10>; rel="prev"
     # <http://localhost:8000/bdbs?offset=50&limit=10>; rel="next",
