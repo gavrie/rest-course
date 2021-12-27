@@ -1,7 +1,7 @@
-from pydantic import PositiveInt, HttpUrl
+from pydantic import HttpUrl, PositiveInt
 from pydantic.dataclasses import dataclass
 
-from .types import BDBType, BDB
+from .types import BDB, BDBType
 
 
 @dataclass
