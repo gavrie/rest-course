@@ -3,11 +3,11 @@ from collections.abc import Iterable
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import NonNegativeInt
-from starlette.datastructures import URL
 
 from . import bdb_manager
 from .params import BDBParams, BDBResponse
 from .types import UID
+from .util import link, url_for
 
 app = FastAPI(title="REST Course", description="REST API Course")
 
@@ -17,7 +17,7 @@ def create_bdb(req: BDBParams, request: Request, response: Response):
     bdb = bdb_manager.create_bdb(req)
 
     # TODO: Add fields: created_at
-    url = request.url_for("get_bdb", uid=str(bdb.uid))
+    url = url_for(request, "get_bdb", uid=str(bdb.uid))
     response.headers["location"] = url
     return BDBResponse(bdb=bdb, url=url)
 
@@ -28,7 +28,7 @@ def create_bdb(req: BDBParams, request: Request, response: Response):
 def get_bdb(uid: UID, request: Request):
     try:
         bdb = bdb_manager.get_bdb(uid)
-        url = request.url_for("get_bdb", uid=str(bdb.uid))
+        url = url_for(request, "get_bdb", uid=str(bdb.uid))
         return BDBResponse(bdb=bdb, url=url)
     except LookupError:
         raise HTTPException(status_code=404)
@@ -46,14 +46,21 @@ def get_all_bdbs(
     offset: NonNegativeInt = 0,
     limit: NonNegativeInt = 1000,
 ):
-    response.headers["link"] = ""
-    bdb_url = URL(request.url_for("get_bdb"))
-    bdb_url.include_query_params(offset=offset, limit=limit)
-    # <http://localhost:8000/bdbs?offset=0&limit=10>; rel="first",
-    # <http://localhost:8000/bdbs?offset=40&limit=10>; rel="prev"
-    # <http://localhost:8000/bdbs?offset=50&limit=10>; rel="next",
-    # <http://localhost:8000/bdbs?offset=90&limit=10>; rel="last",
+    def url_with_offset(offset):
+        return url_for(
+            request, "get_all_bdbs", query_params=dict(offset=offset, limit=limit)
+        )
+
+    # Exercise: Look up and use the correct numbers
+    rels = dict(
+        first=url_with_offset(0),
+        prev=url_with_offset(40),
+        next=url_with_offset(50),
+        last=url_with_offset(90),
+    )
+
+    response.headers["link"] = link(rels)
 
     for bdb in bdb_manager.get_all_bdbs(offset=offset, limit=limit):
-        url = request.url_for("get_bdb", uid=str(bdb.uid))
+        url = url_for(request, "get_bdb", uid=str(bdb.uid))
         yield BDBResponse(bdb=bdb, url=url)
