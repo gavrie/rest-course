@@ -1,6 +1,7 @@
 # PEP 585
 from collections.abc import Iterable
 
+import yaml
 from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import bdb_manager
@@ -27,10 +28,17 @@ def create_bdb(req: BDBParams, request: Request, response: Response):
 def get_bdb(uid: UID, request: Request):
     try:
         bdb = bdb_manager.get_bdb(uid)
-        url = url_for(request, "get_bdb", uid=str(bdb.uid))
-        return BDBResponse(bdb=bdb, url=url)
     except LookupError:
         raise HTTPException(status_code=404)
+
+    url = url_for(request, "get_bdb", uid=str(bdb.uid))
+    bdb_response = BDBResponse(bdb=bdb, url=url)
+
+    if "yaml" in request.headers["accept"].lower():
+        content = yaml.dump(bdb_response)
+        return Response(content=content, media_type="application/x-yaml")
+    else:
+        return bdb_response
 
 
 @app.get(

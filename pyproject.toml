@@ -17,6 +17,7 @@ fastapi = "^0.70.1"
 uvicorn = {extras = ["standard"], version = "^0.16.0"}
 redis = "^4.0.2"
 httpx = {extras = ["cli"], version = "^0.21.1"}
+PyYAML = "^6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
