@@ -1,9 +1,7 @@
-from pydantic import PositiveInt
+from pydantic import PositiveInt, HttpUrl
 from pydantic.dataclasses import dataclass
 
 from .types import BDBType, BDB
-
-Url = str
 
 
 @dataclass
@@ -16,4 +14,4 @@ class BDBParams:
 @dataclass
 class BDBResponse:
     bdb: BDB
-    url: Url
+    url: HttpUrl
