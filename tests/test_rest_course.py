@@ -102,3 +102,4 @@ def test_updating_after_conflicting_update_fails(client):
 
     with pytest.raises(httpx.HTTPStatusError, match="409"):
         client.put(bdb_url, json=bdb)
+
