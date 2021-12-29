@@ -67,3 +67,18 @@ def test_create_bdb(client):
     # Clean up
     # TODO: Not implemented yet on the server side
     # client.delete(bdb_url)
+
+
+def test_updating_with_bad_params_fails(client):
+    # Create a BDB
+    params = {"name": "foo", "memory_size": 2}
+    r = client.post(BDBS_URL, json=params)
+    bdb_response = r.json()
+    bdb = bdb_response["bdb"]
+    bdb_url = bdb_response["url"]
+
+    # Update the BDB
+    bdb["memory_size"] = 1
+
+    with pytest.raises(httpx.HTTPStatusError, match="422"):
+        client.put(bdb_url, json=bdb)

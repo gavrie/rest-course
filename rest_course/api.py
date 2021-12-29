@@ -1,11 +1,11 @@
 # PEP 585
 from collections.abc import Iterable
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, status
 
-from . import bdb_manager
+from . import bdb_manager, errors
 from .params import BDBParams, BDBResponse
-from .types import UID
+from .types import UID, BDB
 from .util import url_for
 
 app = FastAPI(title="REST Course", description="REST API Course")
@@ -31,6 +31,17 @@ def get_bdb(uid: UID, request: Request):
         return BDBResponse(bdb=bdb, url=url)
     except LookupError:
         raise HTTPException(status_code=404)
+
+
+@app.put("/bdbs/{uid}", tags=["bdb"], operation_id="update_bdb", response_model=BDB)
+def update_bdb(uid: UID, req: BDB):
+    try:
+        bdb = bdb_manager.update_bdb(uid, req)
+        return bdb
+    except errors.InvalidOperationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
+        )
 
 
 @app.get(
