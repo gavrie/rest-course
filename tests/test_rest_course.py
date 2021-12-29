@@ -1,11 +1,11 @@
 import random
-import time
 
 import httpx
 import pytest
 
 BASE_URL = "http://localhost:8000"
 BDBS_URL = f"{BASE_URL}/bdbs"
+BARRIER_URL = f"{BASE_URL}/test/barrier"
 
 
 @pytest.fixture(scope="module")
@@ -94,7 +94,8 @@ def test_updating_after_conflicting_update_fails(client):
     bdb_url = bdb_response["url"]
 
     # Wait for conflicting update to happen
-    time.sleep(1)
+    client.put(BARRIER_URL)
+    client.get(BARRIER_URL)
 
     # Update the BDB
     bdb["memory_size"] = 4  # Will fail if updated to a larger size in the meantime

@@ -1,6 +1,8 @@
 # PEP 585
 from collections.abc import Iterable
+from uuid import uuid4
 
+from anyio import Event
 from fastapi import FastAPI, HTTPException, Request, Response, status
 
 from . import bdb_manager, errors
@@ -54,3 +56,29 @@ def get_all_bdbs(request: Request):
     for bdb in bdb_manager.get_all_bdbs():
         url = url_for(request, "get_bdb", uid=str(bdb.uid))
         yield BDBResponse(bdb=bdb, url=url)
+
+
+#############################################
+#
+# Testing endpoints
+
+events: dict[str, Event] = {}
+
+
+@app.post("/test/events")
+async def set_event():
+    uuid = str(uuid4())
+    events[uuid] = Event()
+    return uuid
+
+
+@app.delete("/test/events/{uuid}")
+async def clear_event(uuid: str):
+    event = events[uuid]
+    await event.set()
+
+
+@app.put("/test/events/{uuid}")
+async def wait_for_event(uuid: str):
+    event = events[uuid]
+    await event.wait()
