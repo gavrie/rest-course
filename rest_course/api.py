@@ -1,7 +1,7 @@
 # PEP 585
 from collections.abc import Iterable
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 
 from .params import BDBParams
 from .types import BDB, UID
@@ -12,7 +12,7 @@ all_bdbs: dict[UID, BDB] = {}
 bdb_last_uid = 0
 
 
-@app.post("/bdbs")
+@app.post("/bdbs", status_code=status.HTTP_201_CREATED)
 def create_bdb(req: BDBParams) -> BDB:
     global bdb_last_uid
     bdb_last_uid += 1
