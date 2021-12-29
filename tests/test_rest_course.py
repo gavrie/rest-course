@@ -5,12 +5,15 @@ import pytest
 
 BASE_URL = "http://localhost:8000"
 BDBS_URL = f"{BASE_URL}/bdbs"
-BARRIER_URL = f"{BASE_URL}/test/barrier"
+EVENTS_URL = f"{BASE_URL}/test/events"
 
 
 @pytest.fixture(scope="module")
 def client():
-    return httpx.Client(event_hooks={"response": [lambda r: r.raise_for_status()]})
+    return httpx.Client(
+        timeout=3600,
+        event_hooks={"response": [lambda r: r.raise_for_status()]},
+    )
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -92,10 +95,13 @@ def test_updating_after_conflicting_update_fails(client):
     bdb_response = r.json()
     bdb = bdb_response["bdb"]
     bdb_url = bdb_response["url"]
+    print(f"\n*** BDB: {bdb=}")
 
     # Wait for conflicting update to happen
-    client.put(BARRIER_URL)
-    client.get(BARRIER_URL)
+    event = client.post(EVENTS_URL).json()
+    print(f"\n*** Waiting for event: {event=}")
+    print(f"\nUpdate the BDB with a memory_size of 8 and then trigger the event.")
+    client.get(event["url"])
 
     # Update the BDB
     bdb["memory_size"] = 4  # Will fail if updated to a larger size in the meantime
@@ -103,4 +109,3 @@ def test_updating_after_conflicting_update_fails(client):
 
     with pytest.raises(httpx.HTTPStatusError, match="409"):
         client.put(bdb_url, json=bdb)
-

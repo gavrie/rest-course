@@ -15,3 +15,9 @@ class BDBParams:
 class BDBResponse:
     bdb: BDB
     url: HttpUrl
+
+
+@dataclass
+class EventResponse:
+    uuid: str
+    url: HttpUrl

@@ -6,7 +6,7 @@ from anyio import Event
 from fastapi import FastAPI, HTTPException, Request, Response, status
 
 from . import bdb_manager, errors
-from .params import BDBParams, BDBResponse
+from .params import BDBParams, BDBResponse, EventResponse
 from .types import UID, BDB
 from .util import url_for
 
@@ -65,20 +65,20 @@ def get_all_bdbs(request: Request):
 events: dict[str, Event] = {}
 
 
-@app.post("/test/events")
-async def set_event():
+@app.post("/test/events", response_model=EventResponse)
+async def create_event(request: Request):
     uuid = str(uuid4())
     events[uuid] = Event()
-    return uuid
+    return EventResponse(uuid=uuid, url=url_for(request, "wait_for_event", uuid=uuid))
 
 
-@app.delete("/test/events/{uuid}")
-async def clear_event(uuid: str):
+@app.put("/test/events/{uuid}")
+async def trigger_event(uuid: str):
     event = events[uuid]
     await event.set()
 
 
-@app.put("/test/events/{uuid}")
+@app.get("/test/events/{uuid}")
 async def wait_for_event(uuid: str):
     event = events[uuid]
     await event.wait()
