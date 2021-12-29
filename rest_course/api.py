@@ -1,10 +1,12 @@
 # PEP 585
 from collections.abc import Iterable
+from uuid import uuid4
 
+from anyio import Event
 from fastapi import FastAPI, HTTPException, Request, Response, status
 
 from . import bdb_manager, errors
-from .params import BDBParams, BDBResponse
+from .params import BDBParams, BDBResponse, EventResponse
 from .types import UID
 from .util import url_for
 
@@ -57,3 +59,29 @@ def get_all_bdbs(request: Request):
     for bdb in bdb_manager.get_all_bdbs():
         url = url_for(request, "get_bdb", uid=str(bdb.uid))
         yield BDBResponse(bdb=bdb, url=url)
+
+
+#############################################
+#
+# Testing endpoints
+
+events: dict[str, Event] = {}
+
+
+@app.post("/test/events", response_model=EventResponse)
+async def create_event(request: Request):
+    uuid = str(uuid4())
+    events[uuid] = Event()
+    return EventResponse(uuid=uuid, url=url_for(request, "wait_for_event", uuid=uuid))
+
+
+@app.put("/test/events/{uuid}")
+async def trigger_event(uuid: str):
+    event = events[uuid]
+    await event.set()
+
+
+@app.get("/test/events/{uuid}")
+async def wait_for_event(uuid: str):
+    event = events[uuid]
+    await event.wait()
