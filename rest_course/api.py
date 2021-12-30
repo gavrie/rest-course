@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from . import bdb_manager, errors
 from .params import BDBParams, BDBResponse, EventResponse
 from .types import UID, BDB
-from .util import url_for
+from .util import url_for, etag_for, verify_etag_match
 
 app = FastAPI(title="REST Course", description="REST API Course")
 
@@ -20,25 +20,32 @@ def create_bdb(req: BDBParams, request: Request, response: Response):
     # TODO: Add fields: created_at
     url = url_for(request, "get_bdb", uid=str(bdb.uid))
     response.headers["location"] = url
+    response.headers["etag"] = etag_for(bdb)
     return BDBResponse(bdb=bdb, url=url)
 
 
 @app.get(
     "/bdbs/{uid}", tags=["bdb"], operation_id="get_bdb", response_model=BDBResponse
 )
-def get_bdb(uid: UID, request: Request):
+def get_bdb(uid: UID, request: Request, response: Response):
     try:
         bdb = bdb_manager.get_bdb(uid)
-        url = url_for(request, "get_bdb", uid=str(bdb.uid))
-        return BDBResponse(bdb=bdb, url=url)
     except LookupError:
         raise HTTPException(status_code=404)
 
+    response.headers["etag"] = etag_for(bdb)
+
+    url = url_for(request, "get_bdb", uid=str(bdb.uid))
+    return BDBResponse(bdb=bdb, url=url)
+
 
 @app.put("/bdbs/{uid}", tags=["bdb"], operation_id="update_bdb", response_model=BDB)
-def update_bdb(uid: UID, req: BDB):
+def update_bdb(uid: UID, req: BDB, request: Request, response: Response):
+    verify_etag_match(request, etag_for(bdb_manager.get_bdb(uid)))
+
     try:
         bdb = bdb_manager.update_bdb(uid, req)
+        response.headers["etag"] = etag_for(bdb)
         return bdb
     except errors.InvalidOperationError as e:
         raise HTTPException(
