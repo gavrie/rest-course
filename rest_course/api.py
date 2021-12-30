@@ -1,7 +1,7 @@
 # PEP 585
 from collections.abc import Iterable
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, status
 
 from . import bdb_manager
 from .params import BDBParams, BDBResponse
@@ -11,7 +11,13 @@ from .util import url_for
 app = FastAPI(title="REST Course", description="REST API Course")
 
 
-@app.post("/bdbs", tags=["bdb"], operation_id="create_bdb", response_model=BDBResponse)
+@app.post(
+    "/bdbs",
+    tags=["bdb"],
+    operation_id="create_bdb",
+    response_model=BDBResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_bdb(req: BDBParams, request: Request, response: Response):
     bdb = bdb_manager.create_bdb(req)
 
