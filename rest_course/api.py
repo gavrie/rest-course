@@ -39,6 +39,13 @@ def get_bdb(uid: UID, request: Request):
         raise HTTPException(status_code=404)
 
 
+@app.options(
+    "/bdbs/{uid}", include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT
+)
+def bdb_options(response: Response):
+    response.headers["allow"] = ", ".join(["OPTIONS", "GET", "PUT"])
+
+
 @app.get(
     "/bdbs",
     tags=["bdb"],
@@ -49,3 +56,20 @@ def get_all_bdbs(request: Request):
     for bdb in bdb_manager.get_all_bdbs():
         url = url_for(request, "get_bdb", uid=str(bdb.uid))
         yield BDBResponse(bdb=bdb, url=url)
+
+
+@app.options("/bdbs", include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT)
+def bdbs_options(response: Response):
+    response.headers["allow"] = ", ".join(["OPTIONS", "GET", "POST"])
+
+
+@app.get("/")
+def index(request: Request):
+    return {
+        "bdbs": url_for(request, "get_all_bdbs"),
+    }
+
+
+@app.options("/", include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT)
+def index_options(response: Response):
+    response.headers["allow"] = ", ".join(["OPTIONS", "GET"])
