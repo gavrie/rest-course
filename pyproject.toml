@@ -1,4 +1,5 @@
 [tool.black]
+target-version = ["py39"]
 
 
 [tool.isort]
