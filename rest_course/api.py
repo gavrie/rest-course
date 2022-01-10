@@ -1,7 +1,7 @@
 # PEP 585
 from collections.abc import Iterable
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Response
 
 from .params import BDBParams
 from .types import BDB, UID
@@ -39,6 +39,20 @@ def create_bdb(req: BDBParams):
 def get_bdb(uid: UID):
     try:
         return all_bdbs[uid]
+    except LookupError:
+        raise HTTPException(status_code=404)
+
+
+@app.delete(
+    "/bdbs/{uid}",
+    tags=["bdb"],
+    operation_id="delete_bdb",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,  # Prevent returning `None` as `null`
+)
+def delete_bdb(uid: UID):
+    try:
+        del all_bdbs[uid]
     except LookupError:
         raise HTTPException(status_code=404)
 

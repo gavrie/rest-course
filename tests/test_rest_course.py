@@ -15,10 +15,18 @@ def client():
 @pytest.fixture(scope="module", autouse=True)
 def setup(client):
     # Create some BDBs
+    uids = []
     for _ in range(5):
         i = random.randint(1000, 10000)
         params = {"name": f"foo{i}", "memory_size": i}
-        client.post(BDBS_URL, json=params)
+        bdb = client.post(BDBS_URL, json=params).json()
+        uids.append(bdb["uid"])
+
+    yield
+
+    for uid in uids:
+        bdb_url = f"{BDBS_URL}/{uid}"
+        client.delete(bdb_url)
 
 
 def test_nothing(client):
@@ -61,5 +69,4 @@ def test_create_bdb(client):
     assert uid in bdb_uids
 
     # Clean up
-    # TODO: Not implemented yet on the server side
-    # client.delete(bdb_url)
+    client.delete(bdb_url)
