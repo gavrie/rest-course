@@ -44,9 +44,7 @@ def update_bdb(uid: UID, params: BDBResponse):
     try:
         bdb_manager.update_bdb(uid, params.bdb)
     except errors.InvalidOperationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 
 @app.get(

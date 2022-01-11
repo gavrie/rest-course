@@ -75,14 +75,13 @@ def test_updating_with_bad_params_fails(client):
     params = {"name": "foo", "memory_size": 2}
     r = client.post(BDBS_URL, json=params)
     bdb_response = r.json()
-    bdb = bdb_response["bdb"]
     bdb_url = bdb_response["url"]
 
     # Update the BDB
-    bdb["memory_size"] = 1
+    bdb_response["bdb"]["memory_size"] = 1
 
-    with pytest.raises(httpx.HTTPStatusError, match="422"):
-        client.put(bdb_url, json=bdb)
+    with pytest.raises(httpx.HTTPStatusError, match="409"):
+        client.put(bdb_url, json=bdb_response)
 
 
 def test_updating_after_conflicting_update_fails(client):
