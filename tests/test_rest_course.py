@@ -87,24 +87,25 @@ def test_updating_with_bad_params_fails(client):
         client.put(bdb_url, json=bdb_response)
 
 
+@pytest.mark.skip(reason="requires manual triggering of event")
 def test_updating_after_conflicting_update_fails(client):
     # Create a BDB
     params = {"name": "foo", "memory_size": 2}
     r = client.post(BDBS_URL, json=params)
     bdb_response = r.json()
-    bdb = bdb_response["bdb"]
     bdb_url = bdb_response["url"]
-    print(f"\n*** BDB: {bdb=}")
+    print(f"\n*** {bdb_response=}")
 
     # Wait for conflicting update to happen
     event = client.post(EVENTS_URL).json()
     print(f"\n*** Waiting for event: {event=}")
-    print(f"\nUpdate the BDB with a memory_size of 8 and then trigger the event.")
+    print(f"\nUpdate the BDB with a memory_size of 8 and then trigger the event with:")
+    print(f'\nPUT {event["url"]}')
     client.get(event["url"])
 
     # Update the BDB
-    bdb["memory_size"] = 4  # Will fail if updated to a larger size in the meantime
-    client.put(bdb_url, json=bdb)
+    # Will fail if updated to a larger size in the meantime:
+    bdb_response["bdb"]["memory_size"] = 4
 
     with pytest.raises(httpx.HTTPStatusError, match="409"):
-        client.put(bdb_url, json=bdb)
+        client.put(bdb_url, json=bdb_response)
