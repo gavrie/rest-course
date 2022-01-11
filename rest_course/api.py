@@ -5,15 +5,15 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 
 from . import bdb_manager, errors
 from .params import BDBParams, BDBResponse
-from .types import UID, BDB
+from .types import UID
 from .util import url_for
 
 app = FastAPI(title="REST Course", description="REST API Course")
 
 
 @app.post("/bdbs", tags=["bdb"], operation_id="create_bdb", response_model=BDBResponse)
-def create_bdb(req: BDBParams, request: Request, response: Response):
-    bdb = bdb_manager.create_bdb(req)
+def create_bdb(params: BDBParams, request: Request, response: Response):
+    bdb = bdb_manager.create_bdb(params)
 
     # TODO: Add fields: created_at
     url = url_for(request, "get_bdb", uid=str(bdb.uid))
@@ -33,11 +33,16 @@ def get_bdb(uid: UID, request: Request):
         raise HTTPException(status_code=404)
 
 
-@app.put("/bdbs/{uid}", tags=["bdb"], operation_id="update_bdb", response_model=BDB)
-def update_bdb(uid: UID, req: BDB):
+@app.put(
+    "/bdbs/{uid}",
+    tags=["bdb"],
+    operation_id="update_bdb",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def update_bdb(uid: UID, params: BDBResponse):
     try:
-        bdb = bdb_manager.update_bdb(uid, req)
-        return bdb
+        bdb_manager.update_bdb(uid, params.bdb)
     except errors.InvalidOperationError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)

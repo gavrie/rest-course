@@ -4,6 +4,10 @@ from pydantic.dataclasses import dataclass
 from .types import BDB, BDBType
 
 
+class Url(HttpUrl):
+    tld_required = False
+
+
 @dataclass
 class BDBParams:
     name: str
@@ -14,4 +18,4 @@ class BDBParams:
 @dataclass
 class BDBResponse:
     bdb: BDB
-    url: HttpUrl
+    url: Url
