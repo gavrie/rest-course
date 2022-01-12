@@ -24,8 +24,7 @@ def verify_etag_match(request, etag):
     if_match = request.headers.get("if-match")
 
     if if_match is None:
-        # Any etag is fine
-        return
+        raise HTTPException(status_code=status.HTTP_428_PRECONDITION_REQUIRED)
 
     match_etags = [t.strip(' "') for t in if_match.split(",")]
 

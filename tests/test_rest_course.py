@@ -119,8 +119,9 @@ def test_lost_updates_are_avoided(client):
     bdb, bdb_url = j["bdb"], j["url"]
     etag = r.headers["etag"]
 
-    # Updating the BDB without etag succeeds
-    client.put(bdb_url, json=bdb)
+    # Updating the BDB without etag fails
+    with pytest.raises(httpx.HTTPStatusError, match="428"):
+        client.put(bdb_url, json=bdb)
 
     # Updating the BDB with correct etag succeeds
     client.put(bdb_url, headers={"if-match": etag}, json=bdb)
@@ -131,15 +132,6 @@ def test_lost_updates_are_avoided(client):
 
     # Updating the BDB with different content invalidates the old etag
     bdb["name"] = "bar"
-    client.put(bdb_url, json=bdb)
+    client.put(bdb_url, headers={"if-match": etag}, json=bdb)
     with pytest.raises(httpx.HTTPStatusError, match="412"):
         client.put(bdb_url, headers={"if-match": etag}, json=bdb)
-
-    # Updating the BDB with identical content revalidates the original etag
-    bdb["name"] = "foo"
-    r = client.put(bdb_url, json=bdb)
-    new_etag = r.headers["etag"]
-    assert new_etag == etag
-
-    # Now we can update again
-    client.put(bdb_url, headers={"if-match": etag}, json=bdb)
