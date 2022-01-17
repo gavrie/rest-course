@@ -5,6 +5,10 @@
 3. Have Poetry install the project's dependencies (this will create a new `virtualenv` automatically):
 
        poetry install
+4. Enter the virtualenv that was installed:
+
+       poetry shell
+5. If you use PyCharm, set the Python interpreter (`Preferences > Project > Python Interpreter`) to the same environment.
 
 
 ## Running
@@ -17,6 +21,10 @@
 Creating a BDB:
 
     $ httpx http://localhost:8000/bdbs -j '{"name":"foo","memory_size":2}'
+
+Retrieving a BDB:
+
+    $ httpx http://localhost:8000/bdbs/1
 
 Listing the BDBs:
 
