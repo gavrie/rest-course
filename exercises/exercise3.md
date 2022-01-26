@@ -6,7 +6,7 @@ Branch: `lesson_082_update`
   - Called with `PUT /bdbs/<uid>/upgrade?version=x`
   - Question: Why is `PUT` appropriate here and not `POST`?
 - The operation is long-running and normally should take around 30 seconds to complete (simulate this with `sleep` on the server side)
-- While upgrading a BDB, the server should be free for other operations -- so make sure to use `async` with `anyio.sleep` instead of `time.sleep`! (see anyio basics; anyio is included with FastAPI. For a more gentle introduction, see here)
+- While upgrading a BDB, the server should be free for other operations -- so make sure to use `async` with `anyio.sleep` instead of `time.sleep`! (see [anyio basics](https://anyio.readthedocs.io/en/stable/basics.html); `anyio` is included with FastAPI. For a more gentle introduction, [see here](https://fastapi.tiangolo.com/async/))
 - The client will be blocked (held waiting by the server) on the `PUT` until the operation is complete
 - Testing:
   - Write a test that starts an upgrade and waits for it to complete
