@@ -1,8 +1,10 @@
 # PEP 585
+import json
 from collections.abc import Iterable
 
 import yaml
 from fastapi import FastAPI, HTTPException, Request, Response
+from pydantic.json import pydantic_encoder
 
 from . import bdb_manager
 from .params import BDBParams, BDBResponse
@@ -22,6 +24,10 @@ def create_bdb(req: BDBParams, request: Request, response: Response):
     return BDBResponse(bdb=bdb, url=url)
 
 
+def to_yaml(obj):
+    return yaml.dump(json.loads(json.dumps(obj, default=pydantic_encoder)))
+
+
 @app.get(
     "/bdbs/{uid}", tags=["bdb"], operation_id="get_bdb", response_model=BDBResponse
 )
@@ -35,8 +41,8 @@ def get_bdb(uid: UID, request: Request):
     bdb_response = BDBResponse(bdb=bdb, url=url)
 
     if "yaml" in request.headers["accept"].lower():
-        content = yaml.dump(bdb_response)
-        return Response(content=content, media_type="application/x-yaml")
+        y = to_yaml(bdb_response)
+        return Response(content=y, media_type="application/x-yaml")
     else:
         return bdb_response
 
